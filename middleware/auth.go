@@ -2,19 +2,21 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/aungsannphyo/go-restapi/utils"
 	"github.com/gin-gonic/gin"
 )
 
 func Authenticate(context *gin.Context) {
-	token := context.Request.Header.Get("Authorization")
+	header := context.Request.Header.Get("Authorization")
 
-	if token == "" {
-		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Not authorized."})
+	if header == "" || !strings.HasPrefix(header, "Bearer ") {
+		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": " Authorization header missing or malformed"})
 		return
 	}
 
+	token := strings.TrimPrefix(header, "Bearer ")
 	userId, err := utils.VerifyToken(token)
 
 	if err != nil {
